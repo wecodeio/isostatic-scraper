@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+
+require "optparse"
+
+require_relative "../lib/isostatic/processor"
+
+options = { concurrency: Isostatic::Processor::MAX_CONCURRENCY, output_dir: Dir.pwd }
+OptionParser.new do |opts|
+  opts.banner = "Usage: isostatic-scaper [options]"
+
+  opts.on("-o", "--output-dir DIRECTORY", "where to place the resulting CSV files") do |d|
+    options[:output_dir] = d
+  end
+
+  opts.on("-t", "--threads THREADS", "# of threads to spin up") do |t|
+    options[:concurrency] = t.to_i
+  end
+end.parse!
+
+p options
+
+processor = Isostatic::Processor.new do |config|
+              config.max_concurrency = options[:concurrency]
+              config.output_dir = options[:output_dir]
+            end
+processor.run(ARGF.read)
